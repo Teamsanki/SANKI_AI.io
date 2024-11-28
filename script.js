@@ -1,5 +1,5 @@
 // OpenAI API Key (Add your own key here)
-const API_KEY = "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";
+const API_KEY = "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";
 
 // Function to send a message
 async function sendMessage() {
