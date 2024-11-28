@@ -1,45 +1,54 @@
-// Function to simulate chatbot response
-function sendMessage() {
-    var userInput = document.getElementById("user-input").value;
-    if (userInput.trim() === "") {
-        return;
-    }
+// OpenAI API Key (Add your own key here)
+const API_KEY = "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";
 
-    // Display user message
+// Function to send a message
+async function sendMessage() {
+    const userInput = document.getElementById("user-input").value.trim();
+    if (!userInput) return;
+
+    // Display user's message
     displayMessage(userInput, "user");
 
-    // Clear the input field
+    // Clear input field
     document.getElementById("user-input").value = "";
 
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-        let botResponse = getAIResponse(userInput);
-        displayMessage(botResponse, "bot");
-    }, 1000);
+    // Fetch AI response
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${API_KEY}`,
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: userInput },
+                ],
+            }),
+        });
+
+        const data = await response.json();
+        const botReply = data.choices[0].message.content;
+
+        displayMessage(botReply, "bot");
+    } catch (error) {
+        displayMessage("Oops! Something went wrong. Please try again later.", "bot");
+    }
 }
 
-// Function to display messages in the chat box
+// Function to display a message in the chatbox
 function displayMessage(message, sender) {
-    var chatBox = document.getElementById("chat-box");
-    var messageDiv = document.createElement("div");
+    const chatBox = document.getElementById("chat-box");
+
+    const messageDiv = document.createElement("div");
     messageDiv.classList.add("chat-message");
-    messageDiv.classList.add(sender === "bot" ? "bot-message" : "user-message");
-    messageDiv.innerHTML = message;
+    messageDiv.classList.add(sender === "user" ? "user-message" : "bot-message");
+
+    const textNode = document.createTextNode(message);
+    messageDiv.appendChild(textNode);
+
     chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
-}
-
-// Function to generate AI-like response (basic example)
-function getAIResponse(userMessage) {
-    const responses = {
-        "hello": "Hi there! How can I assist you today?",
-        "how are you": "I’m doing well, thank you for asking! How can I help you?",
-        "image": "I can help you generate images! What would you like to create?",
-        "bye": "Goodbye! Have a wonderful day ahead!"
-    };
-
-    userMessage = userMessage.toLowerCase();
-
-    // Return a response based on the user input
-    return responses[userMessage] || "I’m not sure how to respond to that. Could you please ask something else?";
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
